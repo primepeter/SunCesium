@@ -26,18 +26,14 @@ namespace PrimePeter.CesiumSun
          * \param longitude Longitude expressed in decimal degrees. 
          */
         /// <summary>
-        /// Expects <paramref name="dateTime"/> in UTC or Local time.
-        /// Local time is converted to UTC using the system timezone.
-        /// For accurate results at remote locations, pass UTC directly.
+        /// Calculates the sun position for a given UTC time, latitude and longitude.
+        /// Always pass <paramref name="dateTime"/> as UTC.
+        /// Use <see cref="SunTime.utcOffsetHours"/> to convert local-at-location time to UTC before calling this.
         /// </summary>
         public static void CalculateSunPosition(
             DateTime dateTime, double latitude, double longitude, out double outAzimuth, out double outAltitude)
         {
-            // Convert to UTC if local; UTC stays as-is
-            if (dateTime.Kind == DateTimeKind.Local)
-                dateTime = dateTime.ToUniversalTime();
-            else if (dateTime.Kind == DateTimeKind.Unspecified)
-                dateTime = DateTime.SpecifyKind(dateTime, DateTimeKind.Utc);
+            // Expects UTC. SunTime converts local-at-location time using utcOffsetHours before calling this.
 
             // Number of days from J2000.0.  
             double julianDate = 367 * dateTime.Year -

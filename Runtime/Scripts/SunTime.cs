@@ -28,6 +28,9 @@ namespace PrimePeter.CesiumSun
     {
         [Header("Time")] [SerializeField] private DateTimeKind dateTimeKind = DateTimeKind.Local;
 
+        [Tooltip("UTC offset for the geographic location. E.g. +1 for CET (Berlin), +9 for JST (Tokyo), -5 for EST (New York). Does NOT account for DST.")]
+        [SerializeField] [Range(-12, 14)] private float utcOffsetHours = 0f;
+
         [FormerlySerializedAs("jumpToCurrentTimeAtStart")] [SerializeField]
         private bool useCurrentTime = false;
 
@@ -259,7 +262,8 @@ namespace PrimePeter.CesiumSun
         {
             useCurrentTime = true;
             useCurrentTimeChanged.Invoke(useCurrentTime);
-            Time = DateTime.Now;
+            // Use UTC + configured offset so the displayed time matches local time at the geographic location
+            Time = DateTime.UtcNow.AddHours(utcOffsetHours);
         }
 
         private void UpdateTimeOfDayPartsFromTime()
@@ -328,7 +332,9 @@ namespace PrimePeter.CesiumSun
         private void SetDirection()
         {
             Vector3 angles = new Vector3();
-            SunPosition.CalculateSunPosition(time, (double)latitude, (double)longitude, out double azi, out double alt);
+            // Convert local-at-location time to UTC before sun position calculation
+            var utcTime = DateTime.SpecifyKind(time.AddHours(-utcOffsetHours), DateTimeKind.Utc);
+            SunPosition.CalculateSunPosition(utcTime, (double)latitude, (double)longitude, out double azi, out double alt);
             angles.x = (float)alt * Mathf.Rad2Deg;
             angles.y = (float)azi * Mathf.Rad2Deg;
 
