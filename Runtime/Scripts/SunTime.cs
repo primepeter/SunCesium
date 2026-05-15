@@ -54,8 +54,8 @@ namespace PrimePeter.CesiumSun
         public UnityEvent<bool> useCurrentTimeChanged = new();
         public UnityEvent<bool> isAnimatingChanged = new();
 
-        private float longitude;
-        private float latitude;
+        private double longitude;
+        private double latitude;
         private DateTime time;
         private bool isInitialized = false;
         private int frameStep;
@@ -313,7 +313,7 @@ namespace PrimePeter.CesiumSun
             SetDate(Time.Day, Time.Month, year);
         }
 
-        public void SetLocation(float longitude, float latitude)
+        public void SetLocation(double longitude, double latitude)
         {
             this.longitude = longitude;
             this.latitude = latitude;
@@ -371,8 +371,8 @@ namespace PrimePeter.CesiumSun
             if (cesiumGeoreference == null)
                 return;
 
-            latitude  = (float)cesiumGeoreference.latitude;
-            longitude = (float)cesiumGeoreference.longitude;
+            latitude  = cesiumGeoreference.latitude;
+            longitude = cesiumGeoreference.longitude;
         }
 
         public void SetCesiumGeoreference(CesiumGeoreference georeference)
@@ -395,7 +395,7 @@ namespace PrimePeter.CesiumSun
             // This is astronomically correct for sun position calculations.
             double solarUtcOffset = longitude / 15.0;
             var utcTime = DateTime.SpecifyKind(time.AddHours(-solarUtcOffset), DateTimeKind.Utc);
-            SunPosition.CalculateSunPosition(utcTime, (double)latitude, (double)longitude, out double azi, out double alt);
+            SunPosition.CalculateSunPosition(utcTime, latitude, longitude, out double azi, out double alt);
             angles.x = (float)alt * Mathf.Rad2Deg;
             angles.y = (float)azi * Mathf.Rad2Deg;
 
