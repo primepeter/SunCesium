@@ -17,9 +17,8 @@
  */
 
 using UnityEngine;
-using Netherlands3D.Rendering;
 
-namespace Netherlands3D.Sun
+namespace PrimePeter.CesiumSun
 {
     /// <summary>
     /// Helper script to integrate the Netherlands3D Sun package with Cesium for Unity.

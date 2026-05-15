@@ -1,0 +1,30 @@
+{
+  "name": "com.primepeter.cesiumsun",
+  "displayName": "PrimePeter Cesium Sun - Time of Day and Shadows",
+  "version": "1.0.0",
+  "description": "Cesium for Unity sun positioning, day/night cycles, and dynamic shadow management. This is a Cesium-only fork optimized for geographic data visualization.",
+  "unity": "2022.2",
+  "unityRelease": "0f1",
+  "type": "library",
+  "keywords": [
+    "sun",
+    "shadows",
+    "lighting",
+    "time-of-day",
+    "cesium",
+    "geospatial",
+    "geographic",
+    "gis"
+  ],
+  "license": "EUPL-1.2",
+  "readme": "README.md",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/primepeter/SunCesium.git"
+  },
+  "author": {
+    "name": "primepeter",
+    "url": "https://github.com/primepeter"
+  },
+  "dependencies": {}
+}

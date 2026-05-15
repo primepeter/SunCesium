@@ -21,7 +21,7 @@ using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.Serialization;
 
-namespace Netherlands3D.Sun
+namespace PrimePeter.CesiumSun
 {
     [ExecuteInEditMode]
     public class SunTime : MonoBehaviour

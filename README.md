@@ -1,6 +1,9 @@
 # SunCesium
 
-Cesium for Unity implementation of the Netherlands3D Sun package. This package enables realistic day/night cycles and shadow simulation for Cesium-based 3D geospatial scenes, providing accurate sun positioning based on geographic location and time.
+Cesium for Unity integration for realistic sun positioning, day/night cycles, and dynamic shadow management.
+
+**Package Name**: `com.primepeter.cesiumsun`  
+**Namespace**: `PrimePeter.CesiumSun`
 
 ## ⚠️ Important: Cesium for Unity Required
 
@@ -17,25 +20,33 @@ If you need Netherlands3D Coordinates support, use the original package from [Ne
 
 ## Installation
 
-### Prerequisites
+The package is a valid Unity Package Manager (UPM) package. See [INSTALL.md](INSTALL.md) for detailed instructions.
 
-- Unity 2022.2 or later
-- Universal Render Pipeline (URP)
-- Cesium for Unity (optional, but recommended for globe rendering)
+**Quick Add**: In `Packages/manifest.json`, add:
+```json
+"com.primepeter.cesiumsun": "https://github.com/primepeter/SunCesium.git#main"
+```
 
-### Setup Steps
+## Quick Start
 
-1. **Add the package** to your Unity project:
-   - Option A: Clone this repository into your `Assets/Packages/` folder
-   - Option B: Add via OpenUPM: `openupm add eu.netherlands3d.sun`
+1. **Install** the package (see [INSTALL.md](INSTALL.md))
+2. **Drag the Sun prefab** into your Cesium scene
+3. **Press Play** - sun automatically uses CesiumGeoreference location
 
-2. **Ensure dependencies** are installed:
-   - `eu.netherlands3d.coordinates`
-   - `eu.netherlands3d.geotimezone`
+See [QUICKSTART.md](QUICKSTART.md) for a 5-minute guide.
 
-## Usage
+## Package Structure
 
-### Quick Start with Cesium
+```
+com.primepeter.cesiumsun/
+├── Runtime/
+│   ├── Prefabs/          # Sun prefab for quick setup
+│   └── Scripts/          # Core sun and shadow scripts
+├── package.json          # UPM package manifest
+├── README.md             # Package documentation
+├── CHANGELOG.md          # Version history
+└── LICENSE.txt           # EUPL-1.2 license
+```
 
 1. **Create a Sun in your scene**:
    - Drag the `Sun.prefab` from `Runtime/Prefabs/` into your scene

@@ -14,7 +14,7 @@ Get SunCesium working in 5 minutes.
 ### Step 1: Add the Sun Prefab (1 min)
 
 ```
-Drag eu.netherlands3d.sun/Runtime/Prefabs/Sun.prefab into your scene
+Drag com.primepeter.cesiumsun/Runtime/Prefabs/Sun.prefab into your scene
 ```
 
 ### Step 2: Configure the Scene (2 min)
@@ -83,7 +83,7 @@ The DynamicShadowDistance component automatically adjusts shadows based on how h
 
 ### Adjust Shadow Range
 
-Select any GameObject in your scene and add DynamicShadowDistance:
+Select any GameObject in your scene and add DynamicShadowDistance (from `PrimePeter.CesiumSun` namespace):
 
 ```
 Min Shadow Distance:  100      (closest shadows)
@@ -118,6 +118,8 @@ For different camera altitudes:
 ### Example 1: Time-Lapse View
 
 ```csharp
+using PrimePeter.CesiumSun;
+
 public class TimeLapse : MonoBehaviour
 {
     public SunTime sunTime;
@@ -133,6 +135,8 @@ public class TimeLapse : MonoBehaviour
 ### Example 2: Real-Time Clock
 
 ```csharp
+using PrimePeter.CesiumSun;
+
 public class RealTimeClock : MonoBehaviour
 {
     public SunTime sunTime;
@@ -148,6 +152,8 @@ public class RealTimeClock : MonoBehaviour
 ### Example 3: Manual Location Control
 
 ```csharp
+using PrimePeter.CesiumSun;
+
 public class LocationController : MonoBehaviour
 {
     public SunTime sunTime;

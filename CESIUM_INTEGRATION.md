@@ -2,7 +2,7 @@
 
 ## ⚠️ Important: This is a Cesium-Only Package
 
-**SunCesium requires Cesium for Unity and CesiumGeoreference to function.** This is not a compatible drop-in replacement for the original Netherlands3D Sun package which supports multiple coordinate systems.
+**SunCesium (com.primepeter.cesiumsun) requires Cesium for Unity and CesiumGeoreference to function.** This package is specialized for Cesium projects only.
 
 For the original package with Netherlands3D Coordinates support, see [Netherlands3D/Sun](https://github.com/Netherlands3D/Sun).
 
@@ -10,7 +10,7 @@ For the original package with Netherlands3D Coordinates support, see [Netherland
 
 - Cesium for Unity package installed and configured
 - A scene with a CesiumGlobe and CesiumGeoreference component
-- The SunCesium package (eu.netherlands3d.sun) installed
+- The SunCesium package (`com.primepeter.cesiumsun`) installed
 
 ## Setup Process
 
@@ -32,7 +32,7 @@ If you haven't already:
 
 **Option A: Using the Sun Prefab**
 
-1. In your project, navigate to `Packages/eu.netherlands3d.sun/Runtime/Prefabs/`
+1. In your project, navigate to `Packages/com.primepeter.cesiumsun/Runtime/Prefabs/`
 2. Drag `Sun.prefab` into your scene hierarchy
 3. The prefab contains pre-configured `SunTime` and `Directional Light` components
 
@@ -44,7 +44,7 @@ If you haven't already:
 
 2. Add the SunTime script:
    - Select the light GameObject
-   - Add Component → Netherlands3D.Sun → SunTime
+   - Add Component → PrimePeter.CesiumSun → SunTime
 
 3. Configure SunTime:
    - Assign the Directional Light to "Sun Directional Light" field
@@ -69,7 +69,7 @@ For realistic shadow distance at any altitude:
    - Can be any GameObject, typically the Camera or a Manager object
 
 2. **Add the DynamicShadowDistance script**:
-   - Add Component → Netherlands3D.Rendering → DynamicShadowDistance
+   - Add Component → PrimePeter.CesiumSun → DynamicShadowDistance
 
 3. **Configure shadow parameters**:
    - **Range**: 6.5 (default) - adjust based on your altitude range
@@ -149,7 +149,7 @@ Add this debug script temporarily:
 
 ```csharp
 using UnityEngine;
-using Netherlands3D.Sun;
+using PrimePeter.CesiumSun;
 
 public class DebugCesiumSun : MonoBehaviour
 {

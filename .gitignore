@@ -1,0 +1,28 @@
+# This library is not meant to be cloned into Assets/
+# It should be added via package manager or Packages folder
+
+# Unity
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+[Bb]uilds/
+[Ll]ogs/
+[Mm]emory Captures/
+*.keystore
+*.log
+
+# VS Code
+.vscode/
+*.code-workspace
+
+# IDE
+.idea/
+.vs/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Git
+.git/

@@ -5,7 +5,7 @@
 using System;
 using GeoTimeZone;
 
-namespace Netherlands3D.Sun
+namespace PrimePeter.CesiumSun
 {
     public static class SunPosition
     {

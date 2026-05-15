@@ -18,7 +18,7 @@
 using UnityEngine;
 using UnityEngine.Rendering.Universal;
 
-namespace Netherlands3D.Rendering
+namespace PrimePeter.CesiumSun
 {
     /// <summary>
     /// Dynamically adjusts shadow distance based on camera height to ensure proper shadow rendering
