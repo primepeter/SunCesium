@@ -3,7 +3,6 @@
 * http://guideving.blogspot.co.uk/2010/08/sun-position-in-c.html
 */
 using System;
-using GeoTimeZone;
 
 namespace PrimePeter.CesiumSun
 {
@@ -26,12 +25,20 @@ namespace PrimePeter.CesiumSun
          * \param latitude Latitude expressed in decimal degrees. 
          * \param longitude Longitude expressed in decimal degrees. 
          */
+        /// <summary>
+        /// Expects <paramref name="dateTime"/> in UTC or Local time.
+        /// Local time is converted to UTC using the system timezone.
+        /// For accurate results at remote locations, pass UTC directly.
+        /// </summary>
         public static void CalculateSunPosition(
             DateTime dateTime, double latitude, double longitude, out double outAzimuth, out double outAltitude)
         {
-            var timeZoneId = TimeZoneLookup.GetTimeZone(latitude, longitude).Result; //get the local time zone
-            dateTime = TimeZoneConverter.ConvertToUTC(dateTime, timeZoneId); //convert the time to UTC
-            
+            // Convert to UTC if local; UTC stays as-is
+            if (dateTime.Kind == DateTimeKind.Local)
+                dateTime = dateTime.ToUniversalTime();
+            else if (dateTime.Kind == DateTimeKind.Unspecified)
+                dateTime = DateTime.SpecifyKind(dateTime, DateTimeKind.Utc);
+
             // Number of days from J2000.0.  
             double julianDate = 367 * dateTime.Year -
                 (int)((7.0 / 4.0) * (dateTime.Year +
