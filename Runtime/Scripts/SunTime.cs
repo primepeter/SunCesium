@@ -160,11 +160,32 @@ namespace PrimePeter.CesiumSun
         }
 
 #if UNITY_EDITOR
+        private void OnValidate()
+        {
+            // Called by Unity when any inspector value changes.
+            // Syncs the serialized date/time fields to the non-serialized DateTime
+            // so inspector edits take effect immediately, even when animation is off.
+            try
+            {
+                int y = Mathf.Clamp(year, 1, 9999);
+                int mo = Mathf.Clamp(month, 1, 12);
+                int d = Mathf.Clamp(day, 1, DateTime.DaysInMonth(y, mo));
+                int h = Mathf.Clamp(hour, 0, 23);
+                int mi = Mathf.Clamp(minutes, 0, 59);
+                int s = Mathf.Clamp(seconds, 0, 59);
+
+                time = new DateTime(y, mo, d, h, mi, s, dateTimeKind);
+                SetDirection();
+            }
+            catch { }
+        }
+
         private void OnDrawGizmos()
         {
             var position = this.transform.position;
             Gizmos.color = Color.yellow;
-            Gizmos.DrawRay(position, position - sunDirectionalLight.transform.forward * gizmoRayLength);
+            if (sunDirectionalLight != null)
+                Gizmos.DrawRay(position, position - sunDirectionalLight.transform.forward * gizmoRayLength);
         }
 #endif
 
