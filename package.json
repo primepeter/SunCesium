@@ -17,7 +17,7 @@
     "gis"
   ],
   "license": "EUPL-1.2",
-  "readme": "README.md",
+  "readme": "PACKAGE_README.md",
   "repository": {
     "type": "git",
     "url": "https://github.com/primepeter/SunCesium.git"

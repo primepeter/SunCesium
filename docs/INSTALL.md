@@ -19,15 +19,20 @@ Add to your `Packages/manifest.json`:
 ### Method 2: Local File Path
 
 1. Clone or download the repository
-2. Place it in your project's `Packages/` folder:
+2. Place the cloned/downloaded folder in your project's `Packages/` folder:
    ```
-   Packages/com.primepeter.cesiumsun/
+   Packages/SunCesium/
    ```
+   (Unity will read the `package.json` at the root)
 
 ### Method 3: Manual Addition
 
 1. Clone: `git clone https://github.com/primepeter/SunCesium.git`
-2. Copy `com.primepeter.cesiumsun/` to your `Packages/` folder
+2. Move the cloned folder to your project's `Packages/` folder:
+   ```
+   mv SunCesium Packages/SunCesium
+   ```
+   (The entire repository is the package)
 3. Unity will automatically detect and import it
 
 ## Verification

@@ -1,214 +1,101 @@
-# SunCesium
+# SunCesium - PrimePeter Cesium Sun
 
 Cesium for Unity integration for realistic sun positioning, day/night cycles, and dynamic shadow management.
 
 **Package Name**: `com.primepeter.cesiumsun`  
-**Namespace**: `PrimePeter.CesiumSun`
-
-## ⚠️ Important: Cesium for Unity Required
-
-**This is a Cesium-only fork.** It requires Cesium for Unity and CesiumGeoreference component to function. This package will not work with the Netherlands3D Coordinates system.
-
-If you need Netherlands3D Coordinates support, use the original package from [Netherlands3D/Sun](https://github.com/Netherlands3D/Sun).
-
-## Features
-
-- **Dynamic Sun Positioning**: Accurate sun position calculation based on date, time, and geographic coordinates
-- **Realistic Shadows**: Adaptive shadow distance that scales with camera altitude
-- **Cesium Integration**: Seamless integration with Cesium for Unity's CesiumGeoreference component
-- **Flexible Configuration**: Support for automatic and manual location setup
-
-## Installation
-
-The package is a valid Unity Package Manager (UPM) package. See [INSTALL.md](INSTALL.md) for detailed instructions.
-
-**Quick Add**: In `Packages/manifest.json`, add:
-```json
-"com.primepeter.cesiumsun": "https://github.com/primepeter/SunCesium.git#main"
-```
+**Status**: ✅ Production Ready  
+**License**: EUPL-1.2
 
 ## Quick Start
 
-1. **Install** the package (see [INSTALL.md](INSTALL.md))
-2. **Drag the Sun prefab** into your Cesium scene
-3. **Press Play** - sun automatically uses CesiumGeoreference location
+### Installation
 
-See [QUICKSTART.md](QUICKSTART.md) for a 5-minute guide.
+Add to your `Packages/manifest.json`:
 
-## Package Structure
+```json
+{
+  "dependencies": {
+    "com.primepeter.cesiumsun": "https://github.com/primepeter/SunCesium.git#main"
+  }
+}
+```
+
+### Usage
+
+```csharp
+using PrimePeter.CesiumSun;
+
+// Get sun time controller
+SunTime sunTime = GetComponent<SunTime>();
+
+// Set time
+sunTime.SetTime(14, 30, 0);        // 2:30 PM
+sunTime.SetDate(15, 5, 2026);      // May 15, 2026
+
+// Control animation
+sunTime.ToggleAnimation(true);
+sunTime.SetTimeSpeed(60);          // 60x speed
+```
+
+## Features
+
+- ✅ Dynamic sun positioning based on date/time
+- ✅ Realistic shadows with adaptive distance
+- ✅ Cesium for Unity integration
+- ✅ Automatic CesiumGeoreference detection
+- ✅ Manual location override support
+- ✅ Time control and animation
+- ✅ No external dependencies
+
+## Documentation
+
+- **[PACKAGE_README.md](PACKAGE_README.md)** - Package documentation
+- **[docs/QUICKSTART.md](docs/QUICKSTART.md)** - 5-minute setup guide
+- **[docs/CESIUM_INTEGRATION.md](docs/CESIUM_INTEGRATION.md)** - Detailed integration
+- **[docs/SHADOW_SETTINGS.md](docs/SHADOW_SETTINGS.md)** - Shadow configuration
+- **[docs/INSTALL.md](docs/INSTALL.md)** - Installation methods
+- **[docs/UPM_MIGRATION.md](docs/UPM_MIGRATION.md)** - Migration guide
+
+## Requirements
+
+- Unity 2022.2+
+- Universal Render Pipeline (URP)
+- **Cesium for Unity** (required)
+- **CesiumGeoreference component** (required)
+
+## Project Structure
 
 ```
-com.primepeter.cesiumsun/
+.
+├── package.json                    # UPM package manifest
+├── PACKAGE_README.md               # Package documentation
+├── CHANGELOG.md                    # Version history
+├── LICENSE.txt                     # EUPL-1.2 license
+├── README.md                       # This file
 ├── Runtime/
-│   ├── Prefabs/          # Sun prefab for quick setup
-│   └── Scripts/          # Core sun and shadow scripts
-├── package.json          # UPM package manifest
-├── README.md             # Package documentation
-├── CHANGELOG.md          # Version history
-└── LICENSE.txt           # EUPL-1.2 license
+│   ├── Prefabs/
+│   │   └── Sun.prefab              # Ready-to-use sun prefab
+│   └── Scripts/
+│       ├── SunTime.cs              # Sun position controller
+│       ├── SunPosition.cs          # Sun calculation math
+│       ├── DynamicShadowDistance.cs # Shadow management
+│       ├── CesiumIntegration.cs    # Integration helper
+│       └── com.primepeter.cesiumsun.Runtime.asmdef
+└── docs/                           # Additional documentation
+    ├── QUICKSTART.md
+    ├── CESIUM_INTEGRATION.md
+    ├── SHADOW_SETTINGS.md
+    ├── INSTALL.md
+    ├── UPM_MIGRATION.md
+    └── ...
 ```
-
-1. **Create a Sun in your scene**:
-   - Drag the `Sun.prefab` from `Runtime/Prefabs/` into your scene
-   - Or manually create a Directional Light component
-
-2. **Set up the Sun Time Controller**:
-   - Add the `SunTime` script to a GameObject in your scene
-   - Assign your Directional Light to the "Sun Directional Light" field
-   - The script will automatically detect CesiumGeoreference if present
-
-3. **Configure Shadow Distance** (Optional):
-   - Add the `DynamicShadowDistance` script to any GameObject
-   - It will automatically reference your main camera
-   - Adjust `min/max shadow distance` based on your scene scale
-
-4. **Enable Cesium Integration**:
-   - Add the `CesiumIntegration` helper script to auto-connect components
-   - Or manually assign CesiumGeoreference via the `SetCesiumGeoreference()` method
-
-### Manual Configuration
-
-If you need to programmatically change location:
-
-```csharp
-sunTime.SetLocation(longitude, latitude);
-sunTime.SetTime(hour, minute, second);
-sunTime.SetDate(day, month, year);
-```
-
-All location data is extracted from the CesiumGeoreference component. Ensure it is properly configured with the correct geographic position.
-
-## Configuration
-
-### SunTime Script
-
-| Property | Description |
-|----------|-------------|
-| **Hour/Minutes/Seconds** | Current time of day |
-| **Day/Month/Year** | Current date |
-| **Sun Directional Light** | Reference to the light source representing the sun |
-| **Animate** | Enable/disable real-time time progression |
-| **Time Speed** | Multiplier for time progression (1 = normal speed) |
-| **CesiumGeoreference** | Reference to the CesiumGeoreference component (REQUIRED) |
-| **Auto Find Cesium Georeference** | Automatically locate CesiumGeoreference if not assigned |
-
-### DynamicShadowDistance Script
-
-| Property | Description |
-|----------|-------------|
-| **Range** | Multiplier for shadow distance based on height (default: 6.5) |
-| **Min Shadow Distance** | Minimum shadow distance (default: 100m) |
-| **Max Shadow Distance** | Maximum shadow distance (default: 4000m) |
-| **Reference Transform** | Camera or point for height calculation (auto-uses main camera) |
-| **Use Camera Separation From Ground** | Account for camera height above terrain/globe |
-| **Ground Level Offset** | Height offset for terrain/ellipsoid base |
-
-## Shadow Settings Guide
-
-The DynamicShadowDistance system ensures shadows look correct at all altitudes:
-
-- **Low Altitude** (ground level): Uses minShadowDistance for sharp, detailed shadows
-- **High Altitude** (above landscape): Scales shadow distance proportionally to camera height
-- **Very High Altitude** (aircraft/satellite view): Capped at maxShadowDistance to prevent performance issues
-
-### Recommended Settings for Cesium Scenes
-
-| Scenario | Min Distance | Max Distance | Range |
-|----------|-------------|-------------|-------|
-| Urban detail | 50m | 2000m | 8.0 |
-| Regional view | 100m | 4000m | 6.5 |
-| Continent scale | 500m | 10000m | 5.0 |
-
-## Shadow Conflict Prevention
-
-To prevent shadow issues when combining with other lighting systems:
-
-1. **Only use one sun**: Ensure only one Directional Light with the SunTime script is active
-2. **Disable other shadow-casting lights**: Set other lights to "Bake" mode or disable shadows
-3. **Configure URP correctly**:
-   - Set Main Light Shadows to enabled
-   - Adjust Shadow Resolution and Cascades based on performance
-   - Ensure Shadow Distance matches DynamicShadowDistance settings
-
-## API Reference
-
-### SunTime Methods
-
-```csharp
-// Location control
-void SetLocation(float longitude, float latitude);
-void SetCesiumGeoreference(Component georeference);
-void RecalculateOrigin();
-
-// Time control
-void SetTime(int hour, int minute, int second);
-void SetDate(int day, int month, int year);
-void SetTime(DateTime time);
-void ResetToNow();
-
-// Animation control
-void ToggleAnimation(bool animate);
-void SetTimeSpeed(float speed);
-void MultiplyTimeSpeed(float factor);
-```
-
-### DynamicShadowDistance Methods
-
-```csharp
-void SetGroundLevelOffset(float offset);
-float GetCurrentShadowDistance();
-```
-
-## Events
-
-### SunTime Events
-
-```csharp
-UnityEvent<DateTime> timeOfDayChanged;    // Fired when time changes
-UnityEvent<float> timeSpeedChanged;       // Fired when time speed changes
-UnityEvent<bool> useCurrentTimeChanged;   // Fired when current time mode changes
-UnityEvent<bool> isAnimatingChanged;      // Fired when animation state changes
-```
-
-## Troubleshooting
-
-### CesiumGeoreference Not Detected
-
-- Ensure CesiumGeoreference component is in the active scene
-- Check that Cesium for Unity package is properly installed
-- Check the Console for detailed error messages
-- The script will log an ERROR if CesiumGeoreference is missing (it's required)
-
-### Shadows Look Wrong
-
-1. Check DynamicShadowDistance is active in the scene
-2. Verify camera reference is correct
-3. Check URP Shadow Cascade settings
-4. Ensure shadow resolution is appropriate for your scene scale
-5. Verify no other shadow-casting lights are conflicting
-
-### Sun Position Incorrect
-
-1. Verify location (latitude/longitude) is correct
-2. Check system date/time settings
-3. Ensure timezone is correct (GeoTimeZone handles this automatically)
-4. Verify CesiumGeoreference position matches intended location
-
-### Performance Issues
-
-1. Reduce `max shadow distance`
-2. Decrease shadow map resolution in URP settings
-3. Reduce number of shadow cascades
-4. Lower overall shadow quality settings
 
 ## License
 
-This package is provided under the EUPL-1.2 license. See LICENSE.txt for details.
+EUPL-1.2 - See LICENSE.txt for details
 
 ## Credits
 
-- **Original Sun Calculation**: Based on algorithms from [astro.uio.no](http://www.astro.uio.no/~bgranslo/aares/calculate.html)
-- **Netherlands3D**: Core sun and coordinates packages
-- **Cesium.js**: Geospatial web mapping foundation
-
-
+- Original sun calculation based on NOAA/USNO algorithms
+- Cesium for Unity by Cesium GS
+- Inspired by Netherlands3D Sun package
