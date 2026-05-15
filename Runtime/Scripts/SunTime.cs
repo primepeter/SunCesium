@@ -111,11 +111,15 @@ namespace PrimePeter.CesiumSun
         {
             if (cesiumGeoreference == null && autoFindCesiumGeoreference)
             {
-                // Try to find CesiumGeoreference in the scene
-                var foundGeoreference = FindObjectOfType(System.Type.GetType("CesiumForUnity.CesiumGeoreference"));
-                if (foundGeoreference != null)
+                // First: walk up the parent hierarchy (efficient when Sun prefab is a child of CesiumGeoreference)
+                cesiumGeoreference = FindCesiumGeoreferenceInParents();
+
+                // Fallback: scene-wide search
+                if (cesiumGeoreference == null)
                 {
-                    cesiumGeoreference = (Component)foundGeoreference;
+                    var found = FindObjectOfType(System.Type.GetType("CesiumForUnity.CesiumGeoreference"));
+                    if (found != null)
+                        cesiumGeoreference = (Component)found;
                 }
             }
 
@@ -123,6 +127,21 @@ namespace PrimePeter.CesiumSun
             {
                 Debug.LogError("CesiumGeoreference not found! This package requires Cesium for Unity. Please add a CesiumGeoreference component to your scene.");
             }
+        }
+
+        private Component FindCesiumGeoreferenceInParents()
+        {
+            Transform t = transform.parent;
+            while (t != null)
+            {
+                foreach (var comp in t.GetComponents<Component>())
+                {
+                    if (comp != null && comp.GetType().FullName == "CesiumForUnity.CesiumGeoreference")
+                        return comp;
+                }
+                t = t.parent;
+            }
+            return null;
         }
 
         private void Update()
@@ -297,23 +316,35 @@ namespace PrimePeter.CesiumSun
                 if (cesiumGeoreference == null)
                     return;
 
-                // Get the Position property from CesiumGeoreference
-                var positionProperty = cesiumGeoreference.GetType().GetProperty("Position");
+                var type = cesiumGeoreference.GetType();
+
+                // Cesium for Unity exposes latitude/longitude directly on CesiumGeoreference
+                var latProp = type.GetProperty("latitude");
+                var lonProp = type.GetProperty("longitude");
+
+                if (latProp != null && lonProp != null)
+                {
+                    latitude  = (float)System.Convert.ToDouble(latProp.GetValue(cesiumGeoreference));
+                    longitude = (float)System.Convert.ToDouble(lonProp.GetValue(cesiumGeoreference));
+                    return;
+                }
+
+                // Fallback: try nested Position object (other API versions)
+                var positionProperty = type.GetProperty("Position");
                 if (positionProperty != null)
                 {
                     var position = positionProperty.GetValue(cesiumGeoreference);
-                    var latProperty = position.GetType().GetProperty("latitude");
-                    var lonProperty = position.GetType().GetProperty("longitude");
-
-                    if (latProperty != null && lonProperty != null)
+                    var nestedLat = position.GetType().GetProperty("latitude");
+                    var nestedLon = position.GetType().GetProperty("longitude");
+                    if (nestedLat != null && nestedLon != null)
                     {
-                        latitude = (float)System.Convert.ToDouble(latProperty.GetValue(position));
-                        longitude = (float)System.Convert.ToDouble(lonProperty.GetValue(position));
+                        latitude  = (float)System.Convert.ToDouble(nestedLat.GetValue(position));
+                        longitude = (float)System.Convert.ToDouble(nestedLon.GetValue(position));
                         return;
                     }
                 }
 
-                Debug.LogError("Could not extract latitude/longitude from CesiumGeoreference.Position");
+                Debug.LogError("Could not extract latitude/longitude from CesiumGeoreference. Check Cesium for Unity version.");
             }
             catch (System.Exception ex)
             {
@@ -334,6 +365,8 @@ namespace PrimePeter.CesiumSun
 
         private void SetDirection()
         {
+            if (sunDirectionalLight == null) return;
+
             Vector3 angles = new Vector3();
             // Derive UTC offset from longitude: 15 degrees = 1 hour (solar time, no political boundaries)
             // This is astronomically correct for sun position calculations.
@@ -343,7 +376,8 @@ namespace PrimePeter.CesiumSun
             angles.x = (float)alt * Mathf.Rad2Deg;
             angles.y = (float)azi * Mathf.Rad2Deg;
 
-            sunDirectionalLight.transform.localRotation = Quaternion.Euler(angles);
+            // Use world rotation so the light direction is correct regardless of parent transform
+            sunDirectionalLight.transform.rotation = Quaternion.Euler(angles);
         }
 
         //call this when the origin changes to recalculate the origin and set the sun position without calling the time change event
