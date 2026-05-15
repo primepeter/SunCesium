@@ -16,6 +16,7 @@
  *  permissions and limitations under the License.
  */
 
+using CesiumForUnity;
 using System;
 using UnityEngine;
 using UnityEngine.Events;
@@ -44,7 +45,7 @@ namespace PrimePeter.CesiumSun
         [SerializeField] private int frameSteps = 1;
 
         [Header("Georeference")] 
-        [SerializeField] private Component cesiumGeoreference;
+        [SerializeField] private CesiumGeoreference cesiumGeoreference;
         [Tooltip("If true, will automatically look for CesiumGeoreference in the scene if not assigned")]
         [SerializeField] private bool autoFindCesiumGeoreference = true;
 
@@ -56,6 +57,8 @@ namespace PrimePeter.CesiumSun
         private float longitude;
         private float latitude;
         private DateTime time;
+        private bool isInitialized = false;
+        private int frameStep;
 
         public DateTime Time
         {
@@ -87,8 +90,13 @@ namespace PrimePeter.CesiumSun
 
         public bool IsAnimating => animate;
 
-        private int frameStep;
         private const int gizmoRayLength = 10000;
+
+        private void OnEnable()
+        {
+            // Ensure time is correctly set when enabled
+            EnsureTimeInitialized();
+        }
 
         private void Start()
         {
@@ -100,12 +108,62 @@ namespace PrimePeter.CesiumSun
             }
             else
             {
-                var newTime = new DateTime(year, month, day, hour, minutes, seconds, dateTimeKind);
-                Time = newTime;
+                EnsureTimeInitialized();
             }
 
             RecalculateOrigin();
+            isInitialized = true;
         }
+
+        private void EnsureTimeInitialized()
+        {
+            // Synchronize time with serialized fields if time is not initialized
+            if (time == default(DateTime) || !isInitialized)
+            {
+                time = new DateTime(year, month, day, hour, minutes, seconds, dateTimeKind);
+                SetDirection();
+            }
+        }
+
+        private void SyncTimeFromInspector()
+        {
+            // Overwrite the internal time variable with inspector values
+            time = new DateTime(year, month, day, hour, minutes, seconds, dateTimeKind);
+            SetDirection();
+        }
+
+#if UNITY_EDITOR
+        private void OnValidate()
+        {
+            // Called in the editor when inspector values are changed
+            if (!Application.isPlaying)
+            {
+                // Synchronize the time with the inspector values
+                SyncTimeFromInspector();
+                
+                // Update sun position immediately in the editor
+                if (cesiumGeoreference == null && autoFindCesiumGeoreference)
+                {
+                    InitializeCesiumGeoreference();
+                }
+                
+                if (sunDirectionalLight != null)
+                {
+                    RecalculateOrigin();
+                }
+            }
+            else
+            {
+                // In Play mode: update only the sun position, NOT the time variable
+                // This allows using the inspector sliders without interrupting the running animation
+                if (sunDirectionalLight != null && !animate)
+                {
+                    // Only update internal time from inspector if animation is NOT playing
+                    SyncTimeFromInspector();
+                }
+            }
+        }
+#endif
 
         private void InitializeCesiumGeoreference()
         {
@@ -117,9 +175,9 @@ namespace PrimePeter.CesiumSun
                 // Fallback: scene-wide search
                 if (cesiumGeoreference == null)
                 {
-                    var found = FindObjectOfType(System.Type.GetType("CesiumForUnity.CesiumGeoreference"));
+                    var found = FindObjectOfType<CesiumGeoreference>();
                     if (found != null)
-                        cesiumGeoreference = (Component)found;
+                        cesiumGeoreference = found;
                 }
             }
 
@@ -129,12 +187,12 @@ namespace PrimePeter.CesiumSun
             }
         }
 
-        private Component FindCesiumGeoreferenceInParents()
+        private CesiumGeoreference FindCesiumGeoreferenceInParents()
         {
             Transform t = transform.parent;
             while (t != null)
             {
-                foreach (var comp in t.GetComponents<Component>())
+                foreach (var comp in t.GetComponents<CesiumGeoreference>())
                 {
                     if (comp != null && comp.GetType().FullName == "CesiumForUnity.CesiumGeoreference")
                         return comp;
@@ -146,31 +204,40 @@ namespace PrimePeter.CesiumSun
 
         private void Update()
         {
+            // Ensure time is initialized (important after assembly reload)
+            EnsureTimeInitialized();
+
             if (!animate) return;
 
-            // Guard: time is non-serialized; if default (uninitialized), re-initialize from serialized fields
-            if (time == default(DateTime))
-            {
-                time = new DateTime(year, month, day, hour, minutes, seconds, dateTimeKind);
-                return;
-            }
-
-            Time = time.AddSeconds(timeSpeed * UnityEngine.Time.deltaTime);
+            // Update only every N-th frame (performance optimization)
             frameStep = (frameStep + 1) % frameSteps;
+            if (frameStep != 0) return;
+
+            Time = time.AddSeconds(timeSpeed * UnityEngine.Time.deltaTime * frameSteps);
         }
 
 #if UNITY_EDITOR
         private void OnDrawGizmos()
         {
+            if (sunDirectionalLight == null) return;
+            
             var position = this.transform.position;
             Gizmos.color = Color.yellow;
-            Gizmos.DrawRay(position, position - sunDirectionalLight.transform.forward * gizmoRayLength);
+            Gizmos.DrawRay(position, -sunDirectionalLight.transform.forward * gizmoRayLength);
         }
 #endif
 
         public void ToggleAnimation(bool animate)
         {
+            bool wasAnimating = this.animate;
             this.animate = animate;
+            
+            // When animation is enabled, synchronize the current time
+            if (animate && !wasAnimating)
+            {
+                SyncTimeFromInspector();
+            }
+            
             isAnimatingChanged.Invoke(animate);
         }
 
@@ -191,9 +258,9 @@ namespace PrimePeter.CesiumSun
         {
             UseCurrentTime = false;
 
-            hour = Mathf.Clamp(hour, 0, 24);
-            minute = Mathf.Clamp(minute, 0, 60);
-            second = Mathf.Clamp(second, 0, 60);
+            hour = Mathf.Clamp(hour, 0, 23);
+            minute = Mathf.Clamp(minute, 0, 59);
+            second = Mathf.Clamp(second, 0, 59);
 
             Time = new DateTime(
                 Time.Year,
@@ -313,35 +380,18 @@ namespace PrimePeter.CesiumSun
         {
             try
             {
-                if (cesiumGeoreference == null)
+                if (this.cesiumGeoreference == null)
                     return;
-
-                var type = cesiumGeoreference.GetType();
 
                 // Cesium for Unity exposes latitude/longitude directly on CesiumGeoreference
-                var latProp = type.GetProperty("latitude");
-                var lonProp = type.GetProperty("longitude");
+                var latProp = cesiumGeoreference.latitude;
+                var lonProp = cesiumGeoreference.longitude;
 
-                if (latProp != null && lonProp != null)
+                if (latProp != 0 && lonProp != 0)
                 {
-                    latitude  = (float)System.Convert.ToDouble(latProp.GetValue(cesiumGeoreference));
-                    longitude = (float)System.Convert.ToDouble(lonProp.GetValue(cesiumGeoreference));
+                    //latitude = (float)System.Convert.ToDouble(latProp.GetValue(this.cesiumGeoreference));
+                    //longitude = (float)System.Convert.ToDouble(lonProp.GetValue(this.cesiumGeoreference));
                     return;
-                }
-
-                // Fallback: try nested Position object (other API versions)
-                var positionProperty = type.GetProperty("Position");
-                if (positionProperty != null)
-                {
-                    var position = positionProperty.GetValue(cesiumGeoreference);
-                    var nestedLat = position.GetType().GetProperty("latitude");
-                    var nestedLon = position.GetType().GetProperty("longitude");
-                    if (nestedLat != null && nestedLon != null)
-                    {
-                        latitude  = (float)System.Convert.ToDouble(nestedLat.GetValue(position));
-                        longitude = (float)System.Convert.ToDouble(nestedLon.GetValue(position));
-                        return;
-                    }
                 }
 
                 Debug.LogError("Could not extract latitude/longitude from CesiumGeoreference. Check Cesium for Unity version.");
@@ -352,7 +402,7 @@ namespace PrimePeter.CesiumSun
             }
         }
 
-        public void SetCesiumGeoreference(Component georeference)
+        public void SetCesiumGeoreference(CesiumGeoreference georeference)
         {
             cesiumGeoreference = georeference;
             if (georeference == null)
