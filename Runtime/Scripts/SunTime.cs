@@ -36,7 +36,7 @@ namespace PrimePeter.CesiumSun
         [SerializeField] [Range(0, 60)] private int seconds = 0;
         [SerializeField] [Range(1, 31)] private int day = 13;
         [SerializeField] [Range(1, 12)] private int month = 8;
-        [SerializeField] [Range(1, 9999)] private int year = 2022;
+        [SerializeField] [Range(1, 2050)] private int year = 2026;
 
         [Header("Settings")] [SerializeField] private Light sunDirectionalLight;
         [SerializeField] private bool animate = true;
