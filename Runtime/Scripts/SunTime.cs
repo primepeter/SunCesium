@@ -118,7 +118,7 @@ namespace PrimePeter.CesiumSun
                 var foundGeoreference = FindObjectOfType(System.Type.GetType("CesiumForUnity.CesiumGeoreference"));
                 if (foundGeoreference != null)
                 {
-                    cesiumGeoreference = foundGeoreference;
+                    cesiumGeoreference = (Component)foundGeoreference;
                 }
             }
 
