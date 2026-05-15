@@ -32,9 +32,9 @@ namespace PrimePeter.CesiumSun
         [FormerlySerializedAs("jumpToCurrentTimeAtStart")] [SerializeField]
         private bool useCurrentTime = false;
 
-        [SerializeField] [Range(0, 24)] private int hour = 18;
-        [SerializeField] [Range(0, 60)] private int minutes = 0;
-        [SerializeField] [Range(0, 60)] private int seconds = 0;
+        [SerializeField] [Range(0, 23)] private int hour = 18;
+        [SerializeField] [Range(0, 59)] private int minutes = 0;
+        [SerializeField] [Range(0, 59)] private int seconds = 0;
         [SerializeField] [Range(1, 31)] private int day = 13;
         [SerializeField] [Range(1, 12)] private int month = 8;
         [SerializeField] [Range(1, 2050)] private int year = 2026;
@@ -57,7 +57,6 @@ namespace PrimePeter.CesiumSun
         private double longitude;
         private double latitude;
         private DateTime time;
-        private bool isInitialized = false;
         private int frameStep;
 
         public DateTime Time
@@ -112,13 +111,11 @@ namespace PrimePeter.CesiumSun
             }
 
             RecalculateOrigin();
-            isInitialized = true;
         }
 
         private void EnsureTimeInitialized()
         {
-            // Synchronize time with serialized fields if time is not initialized
-            if (time == default(DateTime) || !isInitialized)
+            if (time == default(DateTime))
             {
                 time = new DateTime(year, month, day, hour, minutes, seconds, dateTimeKind);
                 SetDirection();
@@ -169,27 +166,12 @@ namespace PrimePeter.CesiumSun
         {
             if (cesiumGeoreference == null && autoFindCesiumGeoreference)
             {
-                // First: walk up the parent hierarchy (efficient when Sun prefab is a child of CesiumGeoreference)
-                cesiumGeoreference = FindCesiumGeoreferenceInParents();
-
-                // Fallback: scene-wide search
-                if (cesiumGeoreference == null)
-                {
-                    var found = FindObjectOfType<CesiumGeoreference>();
-                    if (found != null)
-                        cesiumGeoreference = found;
-                }
+                cesiumGeoreference = GetComponentInParent<CesiumGeoreference>(includeInactive: true)
+                                     ?? FindObjectOfType<CesiumGeoreference>();
             }
 
             if (cesiumGeoreference == null)
-            {
                 Debug.LogError("CesiumGeoreference not found! This package requires Cesium for Unity. Please add a CesiumGeoreference component to your scene.");
-            }
-        }
-
-        private CesiumGeoreference FindCesiumGeoreferenceInParents()
-        {
-            return GetComponentInParent<CesiumGeoreference>(includeInactive: true);
         }
 
         private void Update()
@@ -355,21 +337,13 @@ namespace PrimePeter.CesiumSun
             year = time.Year;
         }
 
-        private void DetermineCurrentLocationFromOrigin()
+        private void UpdateLocationFromGeoreference()
         {
             if (cesiumGeoreference == null)
             {
-                Debug.LogError("CesiumGeoreference is required for location determination. Please ensure it is assigned or auto-detected.");
+                Debug.LogError("CesiumGeoreference is required. Please assign it or enable auto-detect.");
                 return;
             }
-
-            TryGetLocationFromCesiumGeoreference();
-        }
-
-        private void TryGetLocationFromCesiumGeoreference()
-        {
-            if (cesiumGeoreference == null)
-                return;
 
             latitude  = cesiumGeoreference.latitude;
             longitude = cesiumGeoreference.longitude;
@@ -403,10 +377,9 @@ namespace PrimePeter.CesiumSun
             sunDirectionalLight.transform.rotation = Quaternion.Euler(angles);
         }
 
-        //call this when the origin changes to recalculate the origin and set the sun position without calling the time change event
         public void RecalculateOrigin()
         {
-            DetermineCurrentLocationFromOrigin();
+            UpdateLocationFromGeoreference();
             SetDirection();
         }
     }
