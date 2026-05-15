@@ -2,58 +2,59 @@
 
 ## Overview
 
-The SunCesium package has been enhanced to seamlessly integrate with Cesium for Unity while maintaining full backward compatibility with the Netherlands3D Coordinates system.
+SunCesium is a Cesium for Unity-only fork of the Netherlands3D Sun package. It has been streamlined to require CesiumGeoreference for all location operations, removing fallback support for other coordinate systems.
+
+### Key Difference from Original Package
+
+- **Original Package**: Supports Netherlands3D Coordinates system with optional Cesium integration
+- **SunCesium**: Cesium-only, requires CesiumGeoreference component
+- **Use Case**: Optimized exclusively for Cesium for Unity projects
 
 ## File Modifications
 
-### 1. **SunTime.cs** - Major Enhancements
+### 1. **SunTime.cs** - Cesium-Only Implementation
 
-#### Added Fields
+#### Removed
+- `using Netherlands3D.Coordinates` - No longer needed
+- `useCesiumGeoreference` flag - Always required now
+- `TryGetLocationFromCoordinateSystem()` method - Fallback support removed
+
+#### Added/Modified Fields
 ```csharp
-[SerializeField] private Component cesiumGeoreference;
+[SerializeField] private Component cesiumGeoreference;  // Now required
 [SerializeField] private bool autoFindCesiumGeoreference = true;
-private bool useCesiumGeoreference = false;
 ```
 
-#### New Methods
+#### Key Methods
 
-**`InitializeCesiumGeoreference()`**
-- Automatically detects CesiumGeoreference component in scene
+**`InitializeCesiumGeoreference()`** - Now enforces requirement
+- Automatically detects CesiumGeoreference in scene
+- Logs ERROR if not found (instead of proceeding with fallback)
 - Called during Start()
-- Sets `useCesiumGeoreference` flag based on detection
 
-**`TryGetLocationFromCesiumGeoreference()`**
-- Extracts latitude/longitude from CesiumGeoreference component
-- Uses reflection to access Position property
-- Graceful error handling with detailed logging
-- Returns silently if CesiumGeoreference unavailable
+**`DetermineCurrentLocationFromOrigin()` - Simplified**
+- Only uses CesiumGeoreference
+- Removed all fallback logic
+- Logs error if CesiumGeoreference is null
 
-**`TryGetLocationFromCoordinateSystem()`**
-- Fallback method using Netherlands3D Coordinates
-- Maintains original behavior
-- Returns boolean indicating success/failure
-
-**`DetermineCurrentLocationFromOrigin()` - Refactored**
-- Now tries CesiumGeoreference first
-- Falls back to Coordinates system if not available
-- Logs warnings if neither system is configured
-
-**`SetCesiumGeoreference(Component georeference)`**
-- Public method to manually assign CesiumGeoreference
+**`SetCesiumGeoreference(Component georeference)` - Updated**
+- Now validates that georeference is not null
+- Logs error if null is passed
 - Triggers location recalculation
-- Allows runtime switching between georeferences
 
 #### Behavior Changes
-- **Startup**: Now checks for CesiumGeoreference before trying Coordinates system
-- **Fallback**: Gracefully handles missing georeferences with informative warnings
-- **Flexibility**: Supports both Cesium and Netherlands3D coordinate systems
+- **Startup**: Will error immediately if CesiumGeoreference not found
+- **No fallback**: All location operations require Cesium
+- **Strict validation**: Clear error messages guide user to fix configuration
 
-#### Backward Compatibility
-✅ **100% Compatible** - Existing Netherlands3D Coordinates setups continue to work unchanged
+#### Breaking Changes (from original package)
+⚠️ **This is NOT backward compatible with Netherlands3D Coordinates**
+
+If you need Netherlands3D Coordinates support, use the original package.
 
 ---
 
-### 2. **DynamicShadowDistance.cs** - Shadow Enhancements
+### 2. **DynamicShadowDistance.cs** - Shadow Enhancements (Unchanged)
 
 #### Added Fields
 ```csharp
@@ -99,7 +100,7 @@ private bool useCesiumGeoreference = false;
 - Adaptive shadow distance for viewing scales from ground to orbital
 
 #### Backward Compatibility
-✅ **100% Compatible** - All existing behavior preserved, new features are optional
+✅ **Shadow features maintain compatibility** with original Netherlands3D implementation
 
 ---
 
@@ -224,8 +225,39 @@ var cesiumGeoreference = FindObjectOfType(System.Type.GetType("CesiumForUnity.Ce
 sunTime.SetCesiumGeoreference(cesiumGeoreference);
 ```
 
+---
+
+## Migration Guide
+
+### From Original Netherlands3D Package
+
+**Important**: SunCesium is NOT compatible with the original package. You cannot use Netherlands3D Coordinates with SunCesium.
+
+**Choose your version based on needs**:
+- **Original Package**: Use if you need Netherlands3D Coordinates support
+- **SunCesium**: Use if you're working exclusively with Cesium for Unity
+
+**If migrating a project that previously used Netherlands3D Coordinates**:
+
+1. Remove any references to Netherlands3D Coordinates initialization
+2. Ensure CesiumGeoreference exists in your scene
+3. The sun will now use CesiumGeoreference location exclusively
+4. All location code using `SetLocation()` method continues to work
+
 ### Code Breaking Changes
-**None!** All existing code continues to work as before.
+⚠️ **Key breaking change**: Netherlands3D Coordinates fallback is removed
+
+**Before** (original package):
+```csharp
+// Would work with Netherlands3D Coordinates if Cesium not available
+sunTime.RecalculateOrigin();
+```
+
+**After** (SunCesium):
+```csharp
+// REQUIRES CesiumGeoreference - will error if missing
+sunTime.RecalculateOrigin();
+```
 
 ---
 

@@ -2,7 +2,11 @@
 
 ## Project Overview
 
-**SunCesium** is an enhanced version of the Netherlands3D Sun package that seamlessly integrates with Cesium for Unity. The package enables realistic sun positioning, day/night cycles, and dynamic shadow management in geospatial visualization applications.
+**SunCesium** is a Cesium for Unity-only fork of the Netherlands3D Sun package. The package enables realistic sun positioning, day/night cycles, and shadow management in Cesium-based geospatial visualization applications.
+
+## Key Architecture Decision
+
+**Cesium-Only Implementation**: This package requires CesiumGeoreference and does NOT support Netherlands3D Coordinates system. This design choice simplifies the codebase and eliminates complexity from supporting multiple coordinate systems.
 
 ## Objectives Achieved
 
@@ -10,18 +14,20 @@
 - **Status**: Complete
 - **Files Modified**: `SunTime.cs`
 - **Details**:
-  - Added automatic detection of CesiumGeoreference component
-  - Implemented reflection-based location extraction from CesiumGeoreference
-  - Created fallback system to maintain Netherlands3D Coordinates compatibility
+  - Automatic detection of CesiumGeoreference component
+  - Reflection-based location extraction from CesiumGeoreference
+  - Required component validation with clear error messages
   - New method `SetCesiumGeoreference()` for manual assignment
 
-### ✅ 2. Scripts Fixed for Location Usage
+### ✅ 2. Removed Fallback Support
 - **Status**: Complete
-- **Files Modified**: `SunTime.cs`, `DynamicShadowDistance.cs`
+- **Files Modified**: `SunTime.cs`
 - **Details**:
-  - `SunTime.cs`: Now extracts latitude/longitude from CesiumGeoreference
-  - `DynamicShadowDistance.cs`: Enhanced to handle geographic altitude references
-  - Both maintain backward compatibility with existing Netherlands3D setups
+  - Removed `Netherlands3D.Coordinates` dependency
+  - Removed `TryGetLocationFromCoordinateSystem()` fallback method
+  - Removed `useCesiumGeoreference` flag (always required now)
+  - Simplified location detection to Cesium-only
+  - Added validation and clear error messages when Cesium is missing
 
 ### ✅ 3. Shadow Settings Review & Fixes
 - **Status**: Complete
@@ -41,14 +47,16 @@
 **Purpose**: Sun position and time controller
 
 **Key Changes**:
+- Removed `Netherlands3D.Coordinates` using statement
+- Removed `useCesiumGeoreference` flag (always required)
 - Added CesiumGeoreference component field with auto-detection
-- New `InitializeCesiumGeoreference()` method
-- Refactored `DetermineCurrentLocationFromOrigin()` to try Cesium first, then fallback
-- New `TryGetLocationFromCesiumGeoreference()` method using reflection
-- New `TryGetLocationFromCoordinateSystem()` fallback method
-- New public `SetCesiumGeoreference()` method for manual assignment
+- Updated `InitializeCesiumGeoreference()` to enforce requirement
+- Refactored `DetermineCurrentLocationFromOrigin()` to use Cesium only
+- Updated `TryGetLocationFromCesiumGeoreference()` to log errors instead of warnings
+- Removed `TryGetLocationFromCoordinateSystem()` fallback method
+- Updated `SetCesiumGeoreference()` with validation
 
-**Backward Compatibility**: ✅ 100% - Existing code continues to work
+**Backward Compatibility**: ❌ **Breaking** - Requires CesiumGeoreference (not compatible with original package)
 
 #### 2. [DynamicShadowDistance.cs](eu.netherlands3d.sun/Runtime/Scripts/DynamicShadowDistance.cs)
 **Purpose**: Dynamic shadow distance management based on camera height
@@ -246,10 +254,11 @@ integration.ApplyIntegration();
 ## Deployment Checklist
 
 - [x] All source files created/modified
-- [x] Comprehensive documentation written
-- [x] Backward compatibility maintained
-- [x] Error handling implemented
-- [x] Performance analyzed
+- [x] Fallback support removed
+- [x] Netherlands3D Coordinates dependency removed
+- [x] CesiumGeoreference requirement enforced
+- [x] Comprehensive documentation updated
+- [x] Error messages guide users to fix configuration
 - [x] Code style consistent
 - [x] Comments and docstrings complete
 - [x] Example usage documented
@@ -317,18 +326,20 @@ integration.ApplyIntegration();
 
 ## Conclusion
 
-The SunCesium package now provides a complete, production-ready solution for integrating realistic sun positioning and shadow management with Cesium for Unity scenes. The implementation maintains full backward compatibility while adding powerful new capabilities for geographic data visualization applications.
+The SunCesium package now provides a focused, production-ready solution for integrating realistic sun positioning and shadow management with Cesium for Unity scenes. The implementation is streamlined for Cesium-only usage, removing unnecessary complexity from supporting multiple coordinate systems.
 
 **Key Achievements**:
-✅ Seamless Cesium integration
+✅ Cesium-only implementation (simplified)
+✅ Enforced CesiumGeoreference requirement
+✅ Removed Netherlands3D Coordinates fallback
 ✅ Robust shadow settings
 ✅ Comprehensive documentation
 ✅ Production-ready code
-✅ Backward compatible
-✅ Performance optimized
+✅ Clear error messages guide user setup
 
 ---
 
-**Version**: 1.4.1 (Enhanced for Cesium)
+**Version**: 1.4.1 (Cesium-only fork)
 **Date**: May 15, 2026
 **Status**: Ready for Production
+**Compatibility**: Cesium for Unity only (not compatible with original Netherlands3D package)

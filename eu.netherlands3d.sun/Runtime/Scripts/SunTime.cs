@@ -17,7 +17,6 @@
  */
 
 using System;
-using Netherlands3D.Coordinates;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.Serialization;
@@ -57,7 +56,6 @@ namespace Netherlands3D.Sun
         private float longitude;
         private float latitude;
         private DateTime time;
-        private bool useCesiumGeoreference = false;
 
         public DateTime Time
         {
@@ -121,7 +119,10 @@ namespace Netherlands3D.Sun
                 }
             }
 
-            useCesiumGeoreference = cesiumGeoreference != null;
+            if (cesiumGeoreference == null)
+            {
+                Debug.LogError("CesiumGeoreference not found! This package requires Cesium for Unity. Please add a CesiumGeoreference component to your scene.");
+            }
         }
 
         private void Update()
@@ -273,20 +274,13 @@ namespace Netherlands3D.Sun
 
         private void DetermineCurrentLocationFromOrigin()
         {
-            // Try to use CesiumGeoreference if available
-            if (useCesiumGeoreference && cesiumGeoreference != null)
+            if (cesiumGeoreference == null)
             {
-                TryGetLocationFromCesiumGeoreference();
+                Debug.LogError("CesiumGeoreference is required for location determination. Please ensure it is assigned or auto-detected.");
+                return;
             }
-            // Fall back to Netherlands3D Coordinates system
-            else if (TryGetLocationFromCoordinateSystem())
-            {
-                // Successfully got location from coordinate system
-            }
-            else
-            {
-                Debug.LogWarning("Could not determine location from CesiumGeoreference or Netherlands3D Coordinates system. Please ensure one is properly configured.");
-            }
+
+            TryGetLocationFromCesiumGeoreference();
         }
 
         private void TryGetLocationFromCesiumGeoreference()
@@ -312,7 +306,7 @@ namespace Netherlands3D.Sun
                     }
                 }
 
-                Debug.LogWarning("Could not extract latitude/longitude from CesiumGeoreference.Position");
+                Debug.LogError("Could not extract latitude/longitude from CesiumGeoreference.Position");
             }
             catch (System.Exception ex)
             {
@@ -320,25 +314,14 @@ namespace Netherlands3D.Sun
             }
         }
 
-        private bool TryGetLocationFromCoordinateSystem()
-        {
-            try
-            {
-                var wgs84SceneCenter = CoordinateSystems.CoordinateAtUnityOrigin.Convert(CoordinateSystem.WGS84_LatLon);
-                longitude = (float)wgs84SceneCenter.easting;
-                latitude = (float)wgs84SceneCenter.northing;
-                return true;
-            }
-            catch
-            {
-                return false;
-            }
-        }
-
         public void SetCesiumGeoreference(Component georeference)
         {
             cesiumGeoreference = georeference;
-            useCesiumGeoreference = georeference != null;
+            if (georeference == null)
+            {
+                Debug.LogError("CesiumGeoreference cannot be null. This package requires Cesium for Unity.");
+                return;
+            }
             RecalculateOrigin();
         }
 

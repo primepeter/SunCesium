@@ -1,14 +1,19 @@
 # SunCesium
 
-Enhanced Netherlands3D Sun package with Cesium for Unity integration. This package enables realistic day/night cycles and shadow simulation for Cesium-based scenes, allowing dynamic sun positioning based on geographic location and time.
+Cesium for Unity implementation of the Netherlands3D Sun package. This package enables realistic day/night cycles and shadow simulation for Cesium-based 3D geospatial scenes, providing accurate sun positioning based on geographic location and time.
+
+## ⚠️ Important: Cesium for Unity Required
+
+**This is a Cesium-only fork.** It requires Cesium for Unity and CesiumGeoreference component to function. This package will not work with the Netherlands3D Coordinates system.
+
+If you need Netherlands3D Coordinates support, use the original package from [Netherlands3D/Sun](https://github.com/Netherlands3D/Sun).
 
 ## Features
 
 - **Dynamic Sun Positioning**: Accurate sun position calculation based on date, time, and geographic coordinates
 - **Realistic Shadows**: Adaptive shadow distance that scales with camera altitude
 - **Cesium Integration**: Seamless integration with Cesium for Unity's CesiumGeoreference component
-- **Backward Compatible**: Maintains compatibility with Netherlands3D Coordinates system
-- **Flexible Configuration**: Support for both automatic and manual location setup
+- **Flexible Configuration**: Support for automatic and manual location setup
 
 ## Installation
 
@@ -52,7 +57,7 @@ Enhanced Netherlands3D Sun package with Cesium for Unity integration. This packa
 
 ### Manual Configuration
 
-If you need manual control over location:
+If you need to programmatically change location:
 
 ```csharp
 sunTime.SetLocation(longitude, latitude);
@@ -60,14 +65,7 @@ sunTime.SetTime(hour, minute, second);
 sunTime.SetDate(day, month, year);
 ```
 
-### Using Netherlands3D Coordinates (Legacy)
-
-If you're not using Cesium, the package falls back to the Netherlands3D Coordinates system:
-
-```csharp
-// Configure the Coordinates package origin, then:
-sunTime.RecalculateOrigin(); // Updates from CoordinateSystems.CoordinateAtUnityOrigin
-```
+All location data is extracted from the CesiumGeoreference component. Ensure it is properly configured with the correct geographic position.
 
 ## Configuration
 
@@ -80,7 +78,7 @@ sunTime.RecalculateOrigin(); // Updates from CoordinateSystems.CoordinateAtUnity
 | **Sun Directional Light** | Reference to the light source representing the sun |
 | **Animate** | Enable/disable real-time time progression |
 | **Time Speed** | Multiplier for time progression (1 = normal speed) |
-| **CesiumGeoreference** | Reference to the CesiumGeoreference component |
+| **CesiumGeoreference** | Reference to the CesiumGeoreference component (REQUIRED) |
 | **Auto Find Cesium Georeference** | Automatically locate CesiumGeoreference if not assigned |
 
 ### DynamicShadowDistance Script
@@ -167,7 +165,8 @@ UnityEvent<bool> isAnimatingChanged;      // Fired when animation state changes
 
 - Ensure CesiumGeoreference component is in the active scene
 - Check that Cesium for Unity package is properly installed
-- Manually assign CesiumGeoreference via inspector or `SetCesiumGeoreference()` method
+- Check the Console for detailed error messages
+- The script will log an ERROR if CesiumGeoreference is missing (it's required)
 
 ### Shadows Look Wrong
 

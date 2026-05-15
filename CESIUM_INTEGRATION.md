@@ -1,6 +1,10 @@
 # Cesium for Unity Integration Guide
 
-This guide explains how to integrate the Netherlands3D Sun package with Cesium for Unity to create realistic lighting and shadows for geographic data visualization.
+## ⚠️ Important: This is a Cesium-Only Package
+
+**SunCesium requires Cesium for Unity and CesiumGeoreference to function.** This is not a compatible drop-in replacement for the original Netherlands3D Sun package which supports multiple coordinate systems.
+
+For the original package with Netherlands3D Coordinates support, see [Netherlands3D/Sun](https://github.com/Netherlands3D/Sun).
 
 ## Prerequisites
 

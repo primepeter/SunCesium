@@ -1,12 +1,13 @@
 # Quick Start Guide
 
-Get the SunCesium package working with Cesium for Unity in 5 minutes.
+Get SunCesium working in 5 minutes.
 
-## Prerequisites
+## ⚠️ Prerequisites
 
 - ✅ Unity 2022.2+
 - ✅ Universal Render Pipeline (URP)
-- ✅ Cesium for Unity package installed
+- ✅ **Cesium for Unity package installed** (REQUIRED)
+- ✅ **CesiumGeoreference component in your scene** (REQUIRED)
 
 ## 5-Minute Setup
 
