@@ -28,9 +28,6 @@ namespace PrimePeter.CesiumSun
     {
         [Header("Time")] [SerializeField] private DateTimeKind dateTimeKind = DateTimeKind.Local;
 
-        [Tooltip("UTC offset for the geographic location. E.g. +1 for CET (Berlin), +9 for JST (Tokyo), -5 for EST (New York). Does NOT account for DST.")]
-        [SerializeField] [Range(-12, 14)] private float utcOffsetHours = 0f;
-
         [FormerlySerializedAs("jumpToCurrentTimeAtStart")] [SerializeField]
         private bool useCurrentTime = false;
 
@@ -131,6 +128,13 @@ namespace PrimePeter.CesiumSun
         private void Update()
         {
             if (!animate) return;
+
+            // Guard: time is non-serialized; if default (uninitialized), re-initialize from serialized fields
+            if (time == default(DateTime))
+            {
+                time = new DateTime(year, month, day, hour, minutes, seconds, dateTimeKind);
+                return;
+            }
 
             Time = time.AddSeconds(timeSpeed * UnityEngine.Time.deltaTime);
             frameStep = (frameStep + 1) % frameSteps;
@@ -262,8 +266,7 @@ namespace PrimePeter.CesiumSun
         {
             useCurrentTime = true;
             useCurrentTimeChanged.Invoke(useCurrentTime);
-            // Use UTC + configured offset so the displayed time matches local time at the geographic location
-            Time = DateTime.UtcNow.AddHours(utcOffsetHours);
+            Time = DateTime.Now;
         }
 
         private void UpdateTimeOfDayPartsFromTime()
@@ -332,8 +335,10 @@ namespace PrimePeter.CesiumSun
         private void SetDirection()
         {
             Vector3 angles = new Vector3();
-            // Convert local-at-location time to UTC before sun position calculation
-            var utcTime = DateTime.SpecifyKind(time.AddHours(-utcOffsetHours), DateTimeKind.Utc);
+            // Derive UTC offset from longitude: 15 degrees = 1 hour (solar time, no political boundaries)
+            // This is astronomically correct for sun position calculations.
+            double solarUtcOffset = longitude / 15.0;
+            var utcTime = DateTime.SpecifyKind(time.AddHours(-solarUtcOffset), DateTimeKind.Utc);
             SunPosition.CalculateSunPosition(utcTime, (double)latitude, (double)longitude, out double azi, out double alt);
             angles.x = (float)alt * Mathf.Rad2Deg;
             angles.y = (float)azi * Mathf.Rad2Deg;
