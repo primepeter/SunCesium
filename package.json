@@ -26,5 +26,7 @@
     "name": "primepeter",
     "url": "https://github.com/primepeter"
   },
-  "dependencies": {}
+  "dependencies": {
+    "com.cesium.unity": "1.0.0"
+  }
 }

@@ -189,17 +189,7 @@ namespace PrimePeter.CesiumSun
 
         private CesiumGeoreference FindCesiumGeoreferenceInParents()
         {
-            Transform t = transform.parent;
-            while (t != null)
-            {
-                foreach (var comp in t.GetComponents<CesiumGeoreference>())
-                {
-                    if (comp != null && comp.GetType().FullName == "CesiumForUnity.CesiumGeoreference")
-                        return comp;
-                }
-                t = t.parent;
-            }
-            return null;
+            return GetComponentInParent<CesiumGeoreference>(includeInactive: true);
         }
 
         private void Update()
@@ -378,28 +368,11 @@ namespace PrimePeter.CesiumSun
 
         private void TryGetLocationFromCesiumGeoreference()
         {
-            try
-            {
-                if (this.cesiumGeoreference == null)
-                    return;
+            if (cesiumGeoreference == null)
+                return;
 
-                // Cesium for Unity exposes latitude/longitude directly on CesiumGeoreference
-                var latProp = cesiumGeoreference.latitude;
-                var lonProp = cesiumGeoreference.longitude;
-
-                if (latProp != 0 && lonProp != 0)
-                {
-                    //latitude = (float)System.Convert.ToDouble(latProp.GetValue(this.cesiumGeoreference));
-                    //longitude = (float)System.Convert.ToDouble(lonProp.GetValue(this.cesiumGeoreference));
-                    return;
-                }
-
-                Debug.LogError("Could not extract latitude/longitude from CesiumGeoreference. Check Cesium for Unity version.");
-            }
-            catch (System.Exception ex)
-            {
-                Debug.LogError($"Error getting location from CesiumGeoreference: {ex.Message}");
-            }
+            latitude  = (float)cesiumGeoreference.latitude;
+            longitude = (float)cesiumGeoreference.longitude;
         }
 
         public void SetCesiumGeoreference(CesiumGeoreference georeference)
