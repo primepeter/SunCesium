@@ -2,7 +2,8 @@
     "name": "com.primepeter.cesiumsun.Runtime",
     "rootNamespace": "PrimePeter.CesiumSun",
     "references": [
-        "Unity.RenderPipelines.Universal.Runtime"
+        "Unity.RenderPipelines.Universal.Runtime",
+        "CesiumForUnity"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
