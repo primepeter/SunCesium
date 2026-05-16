@@ -11,31 +11,15 @@ namespace PrimePeter.CesiumSun
         private const double Deg2Rad = Math.PI / 180.0;
         private const double Rad2Deg = 180.0 / Math.PI;
 
-        /*! 
-         * \brief Calculates the sun light. 
-         * 
-         * CalcSunPosition calculates the suns "position" based on a 
-         * given date and time in local time, latitude and longitude 
-         * expressed in decimal degrees. It is based on the method 
-         * found here: 
-         * http://www.astro.uio.no/~bgranslo/aares/calculate.html 
-         * The calculation is only satisfiably correct for dates in 
-         * the range March 1 1900 to February 28 2100. 
-         * \param dateTime Time and date in local time. 
-         * \param latitude Latitude expressed in decimal degrees. 
-         * \param longitude Longitude expressed in decimal degrees. 
-         */
         /// <summary>
         /// Calculates the sun position for a given UTC time, latitude and longitude.
         /// Always pass <paramref name="dateTime"/> as UTC.
-        /// Use <see cref="SunTime.utcOffsetHours"/> to convert local-at-location time to UTC before calling this.
+        /// SunTime converts local solar time to UTC via <c>longitude / 15.0</c> before calling this.
         /// </summary>
         public static void CalculateSunPosition(
             DateTime dateTime, double latitude, double longitude, out double outAzimuth, out double outAltitude)
         {
-            // Expects UTC. SunTime converts local-at-location time using utcOffsetHours before calling this.
-
-            // Number of days from J2000.0.  
+            // Number of days from J2000.0.
             double julianDate = 367 * dateTime.Year -
                 (int)((7.0 / 4.0) * (dateTime.Year +
                 (int)((dateTime.Month + 9.0) / 12.0))) +

@@ -16,20 +16,21 @@
  *  permissions and limitations under the License.
  */
 
+using CesiumForUnity;
 using UnityEngine;
 
 namespace PrimePeter.CesiumSun
 {
     /// <summary>
-    /// Helper script to integrate the Netherlands3D Sun package with Cesium for Unity.
-    /// Automatically connects SunTime and DynamicShadowDistance components to CesiumGeoreference.
+    /// Helper script to integrate the Sun package with Cesium for Unity.
+    /// Automatically connects SunTime to CesiumGeoreference.
     /// </summary>
     [ExecuteInEditMode]
     public class CesiumIntegration : MonoBehaviour
     {
         [SerializeField] private SunTime sunTime;
         [SerializeField] private DynamicShadowDistance dynamicShadowDistance;
-        [SerializeField] private Component cesiumGeoreference;
+        [SerializeField] private CesiumGeoreference cesiumGeoreference;
         [Tooltip("Auto-detect Cesium components on Start")]
         [SerializeField] private bool autoDetect = true;
 
@@ -45,27 +46,14 @@ namespace PrimePeter.CesiumSun
 
         private void AutoDetectCesiumComponents()
         {
-            // Find CesiumGeoreference
             if (cesiumGeoreference == null)
-            {
-                var georeference = FindObjectOfType(System.Type.GetType("CesiumForUnity.CesiumGeoreference"));
-                if (georeference != null)
-                {
-                    cesiumGeoreference = georeference as Component;
-                }
-            }
+                cesiumGeoreference = FindObjectOfType<CesiumGeoreference>();
 
-            // Find SunTime if not assigned
             if (sunTime == null)
-            {
                 sunTime = FindObjectOfType<SunTime>();
-            }
 
-            // Find DynamicShadowDistance if not assigned
             if (dynamicShadowDistance == null)
-            {
                 dynamicShadowDistance = FindObjectOfType<DynamicShadowDistance>();
-            }
         }
 
         public void ApplyIntegration()
@@ -90,10 +78,7 @@ namespace PrimePeter.CesiumSun
             }
         }
 
-        /// <summary>
-        /// Manually integrate with a specific CesiumGeoreference instance
-        /// </summary>
-        public void IntegrateWithGeoreference(Component georeference)
+        public void IntegrateWithGeoreference(CesiumGeoreference georeference)
         {
             cesiumGeoreference = georeference;
             ApplyIntegration();

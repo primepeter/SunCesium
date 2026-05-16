@@ -32,9 +32,9 @@ namespace PrimePeter.CesiumSun
         [FormerlySerializedAs("jumpToCurrentTimeAtStart")] [SerializeField]
         private bool useCurrentTime = false;
 
-        [SerializeField] [Range(0, 24)] private int hour = 18;
-        [SerializeField] [Range(0, 60)] private int minutes = 0;
-        [SerializeField] [Range(0, 60)] private int seconds = 0;
+        [SerializeField] [Range(0, 23)] private int hour = 18;
+        [SerializeField] [Range(0, 59)] private int minutes = 0;
+        [SerializeField] [Range(0, 59)] private int seconds = 0;
         [SerializeField] [Range(1, 31)] private int day = 13;
         [SerializeField] [Range(1, 12)] private int month = 8;
         [SerializeField] [Range(1, 2050)] private int year = 2026;
@@ -54,10 +54,9 @@ namespace PrimePeter.CesiumSun
         public UnityEvent<bool> useCurrentTimeChanged = new();
         public UnityEvent<bool> isAnimatingChanged = new();
 
-        private float longitude;
-        private float latitude;
+        private double longitude;
+        private double latitude;
         private DateTime time;
-        private bool isInitialized = false;
         private int frameStep;
 
         public DateTime Time
@@ -112,13 +111,11 @@ namespace PrimePeter.CesiumSun
             }
 
             RecalculateOrigin();
-            isInitialized = true;
         }
 
         private void EnsureTimeInitialized()
         {
-            // Synchronize time with serialized fields if time is not initialized
-            if (time == default(DateTime) || !isInitialized)
+            if (time == default(DateTime))
             {
                 time = new DateTime(year, month, day, hour, minutes, seconds, dateTimeKind);
                 SetDirection();
@@ -169,37 +166,12 @@ namespace PrimePeter.CesiumSun
         {
             if (cesiumGeoreference == null && autoFindCesiumGeoreference)
             {
-                // First: walk up the parent hierarchy (efficient when Sun prefab is a child of CesiumGeoreference)
-                cesiumGeoreference = FindCesiumGeoreferenceInParents();
-
-                // Fallback: scene-wide search
-                if (cesiumGeoreference == null)
-                {
-                    var found = FindObjectOfType<CesiumGeoreference>();
-                    if (found != null)
-                        cesiumGeoreference = found;
-                }
+                cesiumGeoreference = GetComponentInParent<CesiumGeoreference>(includeInactive: true)
+                                     ?? FindObjectOfType<CesiumGeoreference>();
             }
 
             if (cesiumGeoreference == null)
-            {
                 Debug.LogError("CesiumGeoreference not found! This package requires Cesium for Unity. Please add a CesiumGeoreference component to your scene.");
-            }
-        }
-
-        private CesiumGeoreference FindCesiumGeoreferenceInParents()
-        {
-            Transform t = transform.parent;
-            while (t != null)
-            {
-                foreach (var comp in t.GetComponents<CesiumGeoreference>())
-                {
-                    if (comp != null && comp.GetType().FullName == "CesiumForUnity.CesiumGeoreference")
-                        return comp;
-                }
-                t = t.parent;
-            }
-            return null;
         }
 
         private void Update()
@@ -323,7 +295,7 @@ namespace PrimePeter.CesiumSun
             SetDate(Time.Day, Time.Month, year);
         }
 
-        public void SetLocation(float longitude, float latitude)
+        public void SetLocation(double longitude, double latitude)
         {
             this.longitude = longitude;
             this.latitude = latitude;
@@ -365,41 +337,16 @@ namespace PrimePeter.CesiumSun
             year = time.Year;
         }
 
-        private void DetermineCurrentLocationFromOrigin()
+        private void UpdateLocationFromGeoreference()
         {
             if (cesiumGeoreference == null)
             {
-                Debug.LogError("CesiumGeoreference is required for location determination. Please ensure it is assigned or auto-detected.");
+                Debug.LogError("CesiumGeoreference is required. Please assign it or enable auto-detect.");
                 return;
             }
 
-            TryGetLocationFromCesiumGeoreference();
-        }
-
-        private void TryGetLocationFromCesiumGeoreference()
-        {
-            try
-            {
-                if (this.cesiumGeoreference == null)
-                    return;
-
-                // Cesium for Unity exposes latitude/longitude directly on CesiumGeoreference
-                var latProp = cesiumGeoreference.latitude;
-                var lonProp = cesiumGeoreference.longitude;
-
-                if (latProp != 0 && lonProp != 0)
-                {
-                    //latitude = (float)System.Convert.ToDouble(latProp.GetValue(this.cesiumGeoreference));
-                    //longitude = (float)System.Convert.ToDouble(lonProp.GetValue(this.cesiumGeoreference));
-                    return;
-                }
-
-                Debug.LogError("Could not extract latitude/longitude from CesiumGeoreference. Check Cesium for Unity version.");
-            }
-            catch (System.Exception ex)
-            {
-                Debug.LogError($"Error getting location from CesiumGeoreference: {ex.Message}");
-            }
+            latitude  = cesiumGeoreference.latitude;
+            longitude = cesiumGeoreference.longitude;
         }
 
         public void SetCesiumGeoreference(CesiumGeoreference georeference)
@@ -422,7 +369,7 @@ namespace PrimePeter.CesiumSun
             // This is astronomically correct for sun position calculations.
             double solarUtcOffset = longitude / 15.0;
             var utcTime = DateTime.SpecifyKind(time.AddHours(-solarUtcOffset), DateTimeKind.Utc);
-            SunPosition.CalculateSunPosition(utcTime, (double)latitude, (double)longitude, out double azi, out double alt);
+            SunPosition.CalculateSunPosition(utcTime, latitude, longitude, out double azi, out double alt);
             angles.x = (float)alt * Mathf.Rad2Deg;
             angles.y = (float)azi * Mathf.Rad2Deg;
 
@@ -430,10 +377,9 @@ namespace PrimePeter.CesiumSun
             sunDirectionalLight.transform.rotation = Quaternion.Euler(angles);
         }
 
-        //call this when the origin changes to recalculate the origin and set the sun position without calling the time change event
         public void RecalculateOrigin()
         {
-            DetermineCurrentLocationFromOrigin();
+            UpdateLocationFromGeoreference();
             SetDirection();
         }
     }
