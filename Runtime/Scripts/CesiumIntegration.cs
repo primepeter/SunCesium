@@ -22,8 +22,8 @@ using UnityEngine;
 namespace PrimePeter.CesiumSun
 {
     /// <summary>
-    /// Helper script to integrate the Sun package with Cesium for Unity.
-    /// Automatically connects SunTime to CesiumGeoreference.
+    /// Helper script to integrate the Netherlands3D Sun package with Cesium for Unity.
+    /// Automatically connects SunTime and DynamicShadowDistance components to CesiumGeoreference.
     /// </summary>
     [ExecuteInEditMode]
     public class CesiumIntegration : MonoBehaviour
@@ -46,14 +46,27 @@ namespace PrimePeter.CesiumSun
 
         private void AutoDetectCesiumComponents()
         {
+            // Find CesiumGeoreference
             if (cesiumGeoreference == null)
-                cesiumGeoreference = FindObjectOfType<CesiumGeoreference>();
+            {
+                var georeference = FindObjectOfType<CesiumGeoreference>();
+                if (georeference != null)
+                {
+                    cesiumGeoreference = georeference;
+                }
+            }
 
+            // Find SunTime if not assigned
             if (sunTime == null)
+            {
                 sunTime = FindObjectOfType<SunTime>();
+            }
 
+            // Find DynamicShadowDistance if not assigned
             if (dynamicShadowDistance == null)
+            {
                 dynamicShadowDistance = FindObjectOfType<DynamicShadowDistance>();
+            }
         }
 
         public void ApplyIntegration()
@@ -78,6 +91,9 @@ namespace PrimePeter.CesiumSun
             }
         }
 
+        /// <summary>
+        /// Manually integrate with a specific CesiumGeoreference instance
+        /// </summary>
         public void IntegrateWithGeoreference(CesiumGeoreference georeference)
         {
             cesiumGeoreference = georeference;
